@@ -42,21 +42,29 @@ int main()
     {
         displayMenu();
         printf("Enter your choice: ");
-        scanf("%d", &choice);
+
+        char input[10];
+        fgets(input, sizeof(input), stdin);
+        choice = atoi(input);
+
+        if (choice < 1 || choice > 7)
+        {
+            printf("\nInvalid choice. Please enter a number between 1 and 7.\n");
+            pauseAndClear();
+            continue;
+        }
 
         switch (choice)
         {
         case 1:
             printf("\nCurrent list (unsorted or as is):\n");
             displayAscending(head);
-            getchar();
             pauseAndClear();
             break;
 
         case 2:
             printf("\nList in Descending Order:\n");
             displayDescending(head);
-            getchar();
             pauseAndClear();
             break;
 
@@ -66,13 +74,11 @@ int main()
             sortList(&head);
             printf("\nList after sorting in ascending order:\n");
             displayAscending(head);
-            getchar();
             pauseAndClear();
             break;
 
         case 4:
             printf("\nEnter the name of the state/territory to search: ");
-            getchar();
             fgets(name, sizeof(name), stdin);
             name[strcspn(name, "\n")] = 0;
             toLowerCase(name);
@@ -91,7 +97,6 @@ int main()
 
         case 5:
             printf("\nEnter the name of the state/territory to delete: ");
-            getchar();
             fgets(name, sizeof(name), stdin);
             name[strcspn(name, "\n")] = 0;
             toLowerCase(name);
@@ -108,7 +113,6 @@ int main()
 
         case 6:
             printf("\nEnter the name of the state/territory to insert: ");
-            getchar();
             fgets(name, sizeof(name), stdin);
             name[strcspn(name, "\n")] = 0;
             insertEnd(&head, name);
@@ -119,10 +123,6 @@ int main()
         case 7:
             printf("\nExiting the program. Goodbye!\n");
             return 0;
-
-        default:
-            printf("\nInvalid choice. Please try again.\n");
-            pauseAndClear();
         }
     }
 

@@ -37,7 +37,6 @@ The program starts with the following 16 Malaysian states and federal territorie
 
 ```
 gcc linkedlist_states.c -o linkedlist_states
-
 ```
 
 ▶️ To Run:
@@ -49,9 +48,8 @@ gcc linkedlist_states.c -o linkedlist_states
 📂 File Structure
 
 ```
-main.c   # Main C source file
-README.md             # This documentation file
-
+main.c            # Main C source file
+README.md         # This documentation file
 ```
 
 📧 Author

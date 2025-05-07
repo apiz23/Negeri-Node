@@ -6,6 +6,7 @@
 struct Node
 {
     char name[50];
+    char lowerName[50];
     struct Node *next;
 };
 
@@ -14,10 +15,11 @@ void displayAscending(struct Node *head);
 void displayDescending(struct Node *head);
 void sortList(struct Node **head);
 int searchNode(struct Node *head, const char *name);
-void deleteNode(struct Node **head, const char *name);
+int deleteNode(struct Node **head, const char *name);
 void displayMenu();
 void toLowerCase(char *str);
 void pauseAndClear();
+void displayDescendingHelper(struct Node *head);
 
 int main()
 {
@@ -45,31 +47,40 @@ int main()
         switch (choice)
         {
         case 1:
-            printf("\nList in Ascending Order:\n");
+            printf("\nCurrent list (unsorted or as is):\n");
             displayAscending(head);
+            getchar();
             pauseAndClear();
             break;
 
         case 2:
             printf("\nList in Descending Order:\n");
             displayDescending(head);
+            getchar();
             pauseAndClear();
             break;
 
         case 3:
+            printf("\nList before sorting:\n");
+            displayAscending(head);
             sortList(&head);
-            printf("\nThe list has been sorted in ascending order.\n");
+            printf("\nList after sorting in ascending order:\n");
+            displayAscending(head);
+            getchar();
             pauseAndClear();
             break;
 
         case 4:
             printf("\nEnter the name of the state/territory to search: ");
-            scanf("%s", name);
+            getchar();
+            fgets(name, sizeof(name), stdin);
+            name[strcspn(name, "\n")] = 0;
             toLowerCase(name);
+
             int position = searchNode(head, name);
             if (position != -1)
             {
-                printf("'%s' found at position %d.\n", name, position + 1);
+                printf("Found at position %d.\n", position + 1);
             }
             else
             {
@@ -80,15 +91,26 @@ int main()
 
         case 5:
             printf("\nEnter the name of the state/territory to delete: ");
-            scanf("%s", name);
-            deleteNode(&head, name);
-            printf("'%s' has been deleted from the list.\n", name);
+            getchar();
+            fgets(name, sizeof(name), stdin);
+            name[strcspn(name, "\n")] = 0;
+            toLowerCase(name);
+            if (deleteNode(&head, name))
+            {
+                printf("'%s' has been deleted from the list.\n", name);
+            }
+            else
+            {
+                printf("'%s' was not found in the list.\n", name);
+            }
             pauseAndClear();
             break;
 
         case 6:
             printf("\nEnter the name of the state/territory to insert: ");
-            scanf("%s", name);
+            getchar();
+            fgets(name, sizeof(name), stdin);
+            name[strcspn(name, "\n")] = 0;
             insertEnd(&head, name);
             printf("'%s' has been added to the list.\n", name);
             pauseAndClear();
@@ -111,6 +133,8 @@ void insertEnd(struct Node **head, const char *name)
 {
     struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
     strcpy(newNode->name, name);
+    strcpy(newNode->lowerName, name);
+    toLowerCase(newNode->lowerName);
     newNode->next = NULL;
 
     if (*head == NULL)
@@ -151,15 +175,15 @@ void displayDescending(struct Node *head)
         printf("The list is empty.\n");
         return;
     }
-    displayDescending(head->next);
-    printf("%s -> ", head->name);
+
+    displayDescendingHelper(head);
+    printf("NULL\n");
 }
 
 void sortList(struct Node **head)
 {
     struct Node *current = *head;
     struct Node *index = NULL;
-    char temp[50];
 
     if (*head == NULL)
         return;
@@ -171,9 +195,15 @@ void sortList(struct Node **head)
         {
             if (strcmp(current->name, index->name) > 0)
             {
+                char temp[50];
+
                 strcpy(temp, current->name);
                 strcpy(current->name, index->name);
                 strcpy(index->name, temp);
+
+                strcpy(temp, current->lowerName);
+                strcpy(current->lowerName, index->lowerName);
+                strcpy(index->lowerName, temp);
             }
             index = index->next;
         }
@@ -185,13 +215,10 @@ int searchNode(struct Node *head, const char *name)
 {
     struct Node *temp = head;
     int position = 0;
-    char lowerCaseName[50];
 
     while (temp != NULL)
     {
-        strcpy(lowerCaseName, temp->name);
-        toLowerCase(lowerCaseName);
-        if (strcmp(lowerCaseName, name) == 0)
+        if (strcmp(temp->lowerName, name) == 0)
         {
             return position;
         }
@@ -201,29 +228,31 @@ int searchNode(struct Node *head, const char *name)
     return -1;
 }
 
-void deleteNode(struct Node **head, const char *name)
+int deleteNode(struct Node **head, const char *name)
 {
     struct Node *temp = *head;
     struct Node *prev = NULL;
 
-    if (temp != NULL && strcmp(temp->name, name) == 0)
-    {
-        *head = temp->next;
-        free(temp);
-        return;
-    }
-
-    while (temp != NULL && strcmp(temp->name, name) != 0)
+    while (temp != NULL && strcmp(temp->lowerName, name) != 0)
     {
         prev = temp;
         temp = temp->next;
     }
 
     if (temp == NULL)
-        return;
+        return 0;
 
-    prev->next = temp->next;
+    if (prev == NULL)
+    {
+        *head = temp->next;
+    }
+    else
+    {
+        prev->next = temp->next;
+    }
+
     free(temp);
+    return 1;
 }
 
 void displayMenu()
@@ -243,7 +272,7 @@ void displayMenu()
     printf("+=====================================================================+\n");
     printf("\n --- Linked List States In Malaysia ---");
     printf("\n\n--- MENU ---\n");
-    printf("1. Display List in Ascending Order\n");
+    printf("1. Display List in Unsorted Order\n");
     printf("2. Display List in Descending Order\n");
     printf("3. Sort the List\n");
     printf("4. Search for a State/Territory\n");
@@ -264,6 +293,13 @@ void pauseAndClear()
 {
     printf("\nPress Enter to continue...");
     getchar();
-    getchar();
     system("cls");
+}
+
+void displayDescendingHelper(struct Node *head)
+{
+    if (head == NULL)
+        return;
+    displayDescendingHelper(head->next);
+    printf("%s -> ", head->name);
 }
